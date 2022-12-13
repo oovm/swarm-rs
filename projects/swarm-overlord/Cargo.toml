@@ -1,0 +1,19 @@
+[package]
+name = "swarm-overlord"
+version = "0.0.0"
+authors = ["Aster <192607617@qq.com>"]
+description = "Send the drone to the target computer and start"
+repository = "https://github.com/oovm/sub_projects"
+documentation = "https://docs.rs/sub_projects"
+readme = "Readme.md"
+license = "MPL-2.0"
+edition = "2021"
+
+[dependencies]
+thrussh = "0.33.5"
+thrussh-keys = "0.21.0"
+
+[dev-dependencies]
+
+[features]
+default = []
