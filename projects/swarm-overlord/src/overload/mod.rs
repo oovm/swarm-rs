@@ -1,58 +1,46 @@
-use std::sync::Arc;
-use diagnostic_quick::QResult;
+use std::fs;
+use std::io::{Read, Write};
+use std::net::TcpStream;
+use std::path::Path;
 
-use futures::future::{Ready, ready};
-use thrussh::{ChannelId, Error};
-use thrussh::client::{Config, connect, Handler, Session};
-use thrussh_keys::agent::client::AgentClient;
-use thrussh_keys::key::{KeyPair, PublicKey};
+use ssh2::Session;
 
-/// Connect to the target computer using the ssh protocol
-pub struct OverloadClient {}
+const FILE_PATH: &str = "Cargo.toml";
 
+fn main() {
+    let tcp = TcpStream::connect("192.168.1.128:22").unwrap();
+    let mut session = Session::new().unwrap();
+    session.set_tcp_stream(tcp);
+    session.handshake().unwrap();
 
-impl Handler for OverloadClient {
-    type Error = Error;
-    type FutureBool = Ready<Result<(Self, bool), Error>>;
-    type FutureUnit = Ready<Result<(Self, Session), Error>>;
+    session.userauth_password("root", "123456").unwrap();
+    session.authenticated();
 
-    fn finished_bool(self, b: bool) -> Self::FutureBool {
-        ready(Ok((self, b)))
-    }
-    fn finished(self, session: Session) -> Self::FutureUnit {
-        ready(Ok((self, session)))
-    }
-    fn check_server_key(self, server_public_key: &PublicKey) -> Self::FutureBool {
-        println!("check_server_key: {:?}", server_public_key);
-        self.finished_bool(true)
-    }
-    fn channel_open_confirmation(self, channel: ChannelId, max_packet_size: u32, window_size: u32, session: Session) -> Self::FutureUnit {
-        println!("channel_open_confirmation: {:?}", channel);
-        self.finished(session)
-    }
-    fn data(self, channel: ChannelId, data: &[u8], session: Session) -> Self::FutureUnit {
-        println!("data on channel {:?}: {:?}", channel, std::str::from_utf8(data));
-        self.finished(session)
-    }
-}
+    let mut channel = session.channel_session().unwrap();
 
+    // 执行命令并打印输出
+    channel.exec("ls").unwrap();
+    let mut ls = String::new();
+    channel.read_to_string(&mut ls).unwrap();
+    println!("{}", ls);
+    channel.wait_close().unwrap();
 
-#[tokio::test]
-async fn main() -> QResult {
-    let config = Config::default();
-    let config = Arc::new(config);
-    let sh = OverloadClient {};
+    // 上传文件
+    let result = fs::read(FILE_PATH).unwrap();
+    let mut remote_file = session.scp_send(Path::new(FILE_PATH)
+                                           , 0o644, result.len() as u64, None).unwrap();
+    remote_file.write(&result).unwrap();
 
-    let key = KeyPair::generate_ed25519().unwrap();
-    let mut agent = AgentClient::connect_env().await?;
-    agent.add_identity(&key, &[]).await?;
-    let mut session = connect(config, "localhost:22", sh).await?;
-    if session.authenticate_future(std::env::var("USER").unwrap(), key.clone_public_key(), agent).await.1.unwrap() {
-        let mut channel = session.channel_open_session().await.unwrap();
-        channel.data(&b"Hello, world!"[..]).await.unwrap();
-        if let Some(msg) = channel.wait().await {
-            println!("{:?}", msg)
-        }
-    }
-    Ok(())
+    // 下载文件
+    let (mut remote_file, _) = session.scp_recv(Path::new(FILE_PATH))
+        .unwrap();
+    let mut read = Vec::new();
+    remote_file.read_to_end(&mut read).unwrap();
+    println!("{:?}", String::from_utf8(read).unwrap());
+
+    // 关闭频道，等待全部内容传输完毕
+    remote_file.send_eof().unwrap();
+    remote_file.wait_eof().unwrap();
+    remote_file.close().unwrap();
+    remote_file.wait_close().unwrap();
 }
