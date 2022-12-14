@@ -13,6 +13,7 @@ edition = "2021"
 futures = "0.3.17"
 ssh2 = "0.9.3"
 
+
 [dependencies.diagnostic-quick]
 version = "0.3.2"
 features = []
