@@ -47,17 +47,8 @@ async fn main() -> QResult {
 
     // 上传文件
     let data: &[u8] = include_bytes!("../../Cargo.toml");
-    client.upload_task(data, "/tmp/Cargo.toml")?.send().await?;
-
-    // 下载文件
-    let (mut remote_file, _) = session.scp_recv(Path::new("Cargo.toml")).unwrap();
-    let mut read = Vec::new();
-    remote_file.read_to_end(&mut read).unwrap();
-
-    // 关闭频道，等待全部内容传输完毕
-    remote_file.send_eof().unwrap();
-    remote_file.wait_eof().unwrap();
-    remote_file.close().unwrap();
-    remote_file.wait_close().unwrap();
+    client.upload_task(data, "/tmp/Cargo.toml")?.execute().await?;
+    let download = client.download_task("/tmp/Cargo.toml")?.execute().await?;
+    println!("{}", String::from_utf8_lossy(&download));
     Ok(())
 }

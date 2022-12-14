@@ -1,5 +1,5 @@
 pub use self::overload::{
-    scp::{SendFileContent, SendFileTask},
+    scp::{ContentResolver, UploadTask},
     SwarmOverlord,
 };
 
