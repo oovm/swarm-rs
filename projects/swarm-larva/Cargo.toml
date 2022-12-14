@@ -10,6 +10,7 @@ license = "MPL-2.0"
 edition = "2021"
 
 [dependencies]
+serde = { version = "1.0.150", features = ["derive"] }
 
 [dependencies.diagnostic-quick]
 version = "0.3.4"
