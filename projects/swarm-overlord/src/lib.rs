@@ -1,6 +1,7 @@
-pub use self::overload::OverloadClient;
+pub use self::overload::{
+    scp::{SendFileContent, SendFileTask},
+    SwarmOverlord,
+};
 
-pub mod utils;
 mod overload;
-
-
+pub mod utils;

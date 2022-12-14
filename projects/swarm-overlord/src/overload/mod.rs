@@ -1,55 +1,42 @@
+use fs::File;
 use std::{
     fs,
     io::{Read, Write},
     net::{TcpStream, ToSocketAddrs},
-    path::Path,
+    path::{Path, PathBuf},
 };
 
-use diagnostic_quick::QResult;
-use ssh2::Session;
+use diagnostic_quick::{error_3rd::SSH2Session, QError, QResult};
 
-pub struct OverloadClient {
-    session: Session,
+pub struct SwarmOverlord {
+    session: SSH2Session,
 }
 
-impl OverloadClient {
-    pub fn login_password<A>(address: A, user: &str, password: &str) -> QResult<Self>
+pub mod scp;
+
+impl SwarmOverlord {
+    pub async fn login_password<A>(address: A, user: &str, password: &str) -> QResult<Self>
     where
         A: ToSocketAddrs,
     {
         let tcp = TcpStream::connect(address)?;
-        let mut session = Session::new()?;
+        let mut session = SSH2Session::new()?;
         session.set_tcp_stream(tcp);
         session.handshake()?;
         session.userauth_password(user, password)?;
-        if session.authenticated() {
-            Ok(Self { session })
+        if !session.authenticated() {
+            Err("Authentication failed")?
         }
-        else {
-            return Err("Authentication failed".into());
-        }
-    }
-}
-
-impl Drop for OverloadClient {
-    fn drop(&mut self) {
-        todo!()
+        Ok(Self { session })
     }
 }
 
 #[tokio::test]
 async fn main() -> QResult {
-    OverloadClient::login_password("192.168.1.100:22", "root", "projecta")?;
+    let client = SwarmOverlord::login_password("192.168.1.100:22", "root", "projecta").await?;
+    let session = &client.session;
 
-    let tcp = TcpStream::connect("192.168.1.100:22")?;
-    let mut session = Session::new().unwrap();
-    session.set_tcp_stream(tcp);
-    session.handshake().unwrap();
-
-    session.userauth_password("root", "projecta").unwrap();
-    session.authenticated();
-
-    let mut channel = session.channel_session().unwrap();
+    let mut channel = session.channel_session()?;
 
     // 执行命令并打印输出
     channel.exec("ls").unwrap();
@@ -59,9 +46,8 @@ async fn main() -> QResult {
     channel.wait_close().unwrap();
 
     // 上传文件
-    let result = fs::read("Cargo.toml").unwrap();
-    let mut remote_file = session.scp_send(Path::new("Cargo.toml"), 0o755, result.len() as u64, None).unwrap();
-    remote_file.write(&result).unwrap();
+    let data: &[u8] = include_bytes!("../../Cargo.toml");
+    client.upload_task(data, "/tmp/Cargo.toml")?.send().await?;
 
     // 下载文件
     let (mut remote_file, _) = session.scp_recv(Path::new("Cargo.toml")).unwrap();

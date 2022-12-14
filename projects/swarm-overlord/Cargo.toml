@@ -11,12 +11,12 @@ edition = "2021"
 
 [dependencies]
 futures = "0.3.17"
-ssh2 = "0.9.3"
+#ssh2 = "0.9.3"
 
 
 [dependencies.diagnostic-quick]
-version = "0.3.2"
-features = []
+version = "0.3.4"
+features = ["ssh2"]
 
 [dev-dependencies]
 tokio = { version = "1.23.0", features = ["full"] }

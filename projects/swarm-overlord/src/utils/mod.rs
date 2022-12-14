@@ -1,11 +1,10 @@
-use std::fs::metadata;
-use std::path::Path;
+use std::{fs::metadata, path::Path};
 
 use diagnostic_quick::QResult;
 
 #[allow(unused_variables)]
 pub fn set_executable(path: &Path) -> QResult<()> {
-    let mut permissions = metadata(path)?.permissions();
+    let permissions = metadata(path)?.permissions();
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt;
