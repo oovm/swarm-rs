@@ -12,6 +12,7 @@ pub struct SwarmOverlord {
     session: SSH2Session,
 }
 
+pub mod github;
 pub mod scp;
 
 impl SwarmOverlord {
@@ -29,26 +30,22 @@ impl SwarmOverlord {
         }
         Ok(Self { session })
     }
+    pub fn shell_runner(&self) -> QResult<ShellRunner> {
+        Ok(ShellRunner { session: &self.session })
+    }
 }
 
-#[tokio::test]
-async fn main() -> QResult {
-    let client = SwarmOverlord::login_password("192.168.1.100:22", "root", "projecta").await?;
-    let session = &client.session;
+pub struct ShellRunner<'s> {
+    session: &'s SSH2Session,
+}
 
-    let mut channel = session.channel_session()?;
-
-    // 执行命令并打印输出
-    channel.exec("ls").unwrap();
-    let mut ls = String::new();
-    channel.read_to_string(&mut ls).unwrap();
-    println!("{}", ls);
-    channel.wait_close().unwrap();
-
-    // 上传文件
-    let data: &[u8] = include_bytes!("../../Cargo.toml");
-    client.upload_task(data, "/tmp/Cargo.toml")?.execute().await?;
-    let download = client.download_task("/tmp/Cargo.toml")?.execute().await?;
-    println!("{}", String::from_utf8_lossy(&download));
-    Ok(())
+impl ShellRunner<'_> {
+    pub async fn execute(&self, command: &str) -> QResult<String> {
+        let mut shell = self.session.channel_session()?;
+        shell.exec(command)?;
+        let mut stdout = String::new();
+        shell.read_to_string(&mut stdout)?;
+        shell.wait_close()?;
+        Ok(stdout)
+    }
 }

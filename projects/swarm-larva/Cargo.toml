@@ -1,8 +1,8 @@
 [package]
-name = "swarm-overlord"
+name = "swarm-larva"
 version = "0.0.0"
 authors = ["Aster <192607617@qq.com>"]
-description = "Manage [swarm-drone]()'s life cycle, including creation, operation and deletion."
+description = "Send the drone to the target computer and startup the swarm"
 repository = "https://github.com/oovm/sub_projects"
 documentation = "https://docs.rs/sub_projects"
 readme = "Readme.md"
@@ -10,17 +10,13 @@ license = "MPL-2.0"
 edition = "2021"
 
 [dependencies]
-futures = "0.3.17"
-find-target = "0.1.0"
-#ssh2 = "0.9.3"
-
 
 [dependencies.diagnostic-quick]
 version = "0.3.4"
-features = ["ssh2"]
+features = []
 
 [dev-dependencies]
-tokio = { version = "1.23.0", features = ["full"] }
+
 
 
 [features]

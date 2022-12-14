@@ -2,15 +2,24 @@
 name = "swarm-drone"
 version = "0.0.0"
 authors = ["Aster <192607617@qq.com>"]
-description = "..."
-repository = "https://github.com/oovm/sub_projects"
-documentation = "https://docs.rs/sub_projects"
+description = "Microservices managed by the HTTP protocol"
+repository = "https://github.com/vers-site/swarm"
+documentation = "https://docs.rs/swarm-drone"
 readme = "Readme.md"
 license = "MPL-2.0"
 edition = "2021"
 
 [dependencies]
+axum =  {version = "0.6.1", features = ["headers","ws"] }
+tracing = "0.1"
+tracing-subscriber = { version="0.3", features = ["env-filter"] }
+tower-http = { version = "0.3.5", features = ["fs", "trace"] }
+headers = "0.3"
+tokio-cron-scheduler = "0.8.1"
 diagnostic-quick = "0.3.0"
+tokio = { version = "1.23.0", features = ["full"] }
+tokio-retry = "0.3.0"
+
 
 [dev-dependencies]
 
