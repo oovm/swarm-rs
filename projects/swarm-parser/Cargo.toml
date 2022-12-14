@@ -11,6 +11,7 @@ edition = "2021"
 
 [dependencies]
 peginator = "0.6.0"
+unicode-ident = "1.0.5"
 
 [dev-dependencies]
 

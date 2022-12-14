@@ -11,6 +11,8 @@ edition = "2021"
 
 [dependencies]
 serde = { version = "1.0.150", features = ["derive"] }
+miette = { version = "5.5.0", features = ["fancy"] }
+thiserror = "1.0.37"
 
 [dependencies.diagnostic-quick]
 version = "0.3.4"

@@ -1,6 +1,7 @@
+use std::env::current_dir;
+
 use diagnostic_quick::QResult;
 use peginator_codegen::Compile;
-use std::env::current_dir;
 
 #[test]
 fn ready() {

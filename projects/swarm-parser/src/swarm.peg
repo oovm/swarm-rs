@@ -1,20 +1,32 @@
 @export
-VonParser = value:ValueNode $;
+SwarmParser = statements:SwarmStatements $;
 
-ValueNode =
-	@:TableNode |
-	@:SpecialNode |
+SwarmStatements =
+	@:NamespaceDeclare |
+	@:DefineDeclare
+
+	;
+
+
+
+NamespaceDeclare = "namespace" namespace:NamespaceNode;
+
+DefineDeclare = "def" namespace:NamespaceNode [parameters:DefineArguments] body:BlockNode;
+
+DefineArguments = '(' ')' | '(' args:DefineArgument [',' args:DefineArgument] ')';
+DefineArgument = name:IdentifierNode [':' type:TypeNode] ['=' value:ExpressionNode ];
+
+
+BlockNode = '{' '}' | '{' statements:BlockStatementNode [statements:BlockStatementNode] '}';
+BlockStatementNode =
 	@:NumberNode |
 	@:StringNode
 	;
 
-TableNode = [hint:IdentifierNode] '(' {items:TableItem} ')' ;
+TypeNode = id:IdentifierNode;
 
-TableItem =
-	@:KeyValueNode |
-	@:ValueNode |
-	@:Split
-	;
+ExpressionNode = StringNode;
+
 
 KeyValueNode = key:KeyNode ':' value:ValueNode;
 
@@ -37,7 +49,8 @@ NumberNode = num:Num [hint:IdentifierNode];
 Num = ['+'|'-'] {'0'..'9'}+ [Dot {'0'..'9'}+];
 
 @position
-NamespaceNode = path:IdentifierNode {Dot path:IdentifierNode};
+NamespaceNode = path:IdentifierNode {NamespaceSplit path:IdentifierNode};
+NamespaceSplit = '.' | '-' | '::';
 
 @string
 @position

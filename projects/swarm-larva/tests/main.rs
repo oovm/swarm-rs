@@ -1,6 +1,4 @@
-use diagnostic_quick::QResult;
-use peginator_codegen::Compile;
-use std::env::current_dir;
+use swarm_parser::{PegParser, VonParser};
 
 #[test]
 fn ready() {
@@ -8,9 +6,7 @@ fn ready() {
 }
 
 #[test]
-#[ignore]
-fn peg_codegen() -> QResult {
-    let dir = current_dir()?.join("../swarm-parser/").canonicalize()?;
-    Compile::file(dir.join("src/swarm.peg")).destination(dir.join("src/swarm.rs")).format().run().unwrap();
-    Ok(())
+fn test() {
+    let parsed = VonParser::parse(include_str!("basic.swarm")).unwrap();
+    println!("{:#?}", parsed);
 }

@@ -12,6 +12,12 @@ edition = "2021"
 [dependencies]
 serde = { version = "1.0.150", features = ["derive"] }
 
+[dependencies.swarm-types]
+path = "../swarm-types"
+
+[dependencies.swarm-parser]
+path = "../swarm-parser"
+
 [dependencies.diagnostic-quick]
 version = "0.3.4"
 features = ["num", "rust_decimal"]
