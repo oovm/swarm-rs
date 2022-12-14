@@ -1,5 +1,5 @@
 [package]
-name = "swarm-larva"
+name = "swarm-parser"
 version = "0.0.0"
 authors = ["Aster <192607617@qq.com>"]
 description = "Send the drone to the target computer and startup the swarm"
@@ -10,14 +10,9 @@ license = "MPL-2.0"
 edition = "2021"
 
 [dependencies]
-serde = { version = "1.0.150", features = ["derive"] }
-
-[dependencies.diagnostic-quick]
-version = "0.3.4"
-features = ["num", "rust_decimal"]
+peginator = "0.6.0"
 
 [dev-dependencies]
-peginator_codegen = "0.6.0"
 
 
 

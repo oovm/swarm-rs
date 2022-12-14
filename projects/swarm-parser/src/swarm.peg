@@ -1,0 +1,64 @@
+@export
+VonParser = value:ValueNode $;
+
+ValueNode =
+	@:TableNode |
+	@:SpecialNode |
+	@:NumberNode |
+	@:StringNode
+	;
+
+TableNode = [hint:IdentifierNode] '(' {items:TableItem} ')' ;
+
+TableItem =
+	@:KeyValueNode |
+	@:ValueNode |
+	@:Split
+	;
+
+KeyValueNode = key:KeyNode ':' value:ValueNode;
+
+@position
+KeyNode =
+	@:IdentifierNode |
+	@:StringNode
+	;
+
+@position
+StringNode = [hint:IdentifierNode] '\"' '\"';
+
+@position
+@no_skip_ws
+NumberNode = num:Num [hint:IdentifierNode];
+
+@string
+@position
+@no_skip_ws
+Num = ['+'|'-'] {'0'..'9'}+ [Dot {'0'..'9'}+];
+
+@position
+NamespaceNode = path:IdentifierNode {Dot path:IdentifierNode};
+
+@string
+@position
+@no_skip_ws
+IdentifierNode = (XID_START | '_') {XID_CONTINUE};
+
+@string
+@position
+SpecialNode = 'null' | 'default' | 'true' | 'false';
+
+
+@char
+@check(unicode_ident::is_xid_start)
+XID_START = char;
+
+@char
+@check(unicode_ident::is_xid_continue)
+XID_CONTINUE = char;
+
+@char
+Dot = '.' | '。';
+
+@char
+Split = ';' | ',' | '，';
