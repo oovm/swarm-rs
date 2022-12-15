@@ -1,4 +1,5 @@
-use swarm_parser::{PegParser, VonParser};
+use swarm_larva::LarvaParser;
+use swarm_types::SwarmResult;
 
 #[test]
 fn ready() {
@@ -6,7 +7,10 @@ fn ready() {
 }
 
 #[test]
-fn test() {
-    let parsed = VonParser::parse(include_str!("basic.swarm")).unwrap();
+
+fn test() -> SwarmResult {
+    let parser = LarvaParser::default();
+    let parsed = parser.parse(include_str!("basic.swarm")).unwrap();
     println!("{:#?}", parsed);
+    Ok(())
 }

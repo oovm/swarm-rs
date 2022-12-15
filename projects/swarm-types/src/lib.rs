@@ -1,6 +1,10 @@
 use diagnostic_quick::error_3rd::{BigInt, Decimal, NodeLocation};
 
-pub use self::{typing::LarvaType, vm::LarvaVM};
+pub use self::{
+    errors::{LarvaError, SwarmResult},
+    typing::LarvaType,
+    vm::LarvaVM,
+};
 
 mod errors;
 mod typing;

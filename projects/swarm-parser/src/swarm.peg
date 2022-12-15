@@ -1,5 +1,5 @@
 @export
-SwarmParser = statements:SwarmStatements $;
+SwarmParser = {statements:SwarmStatements} $;
 
 SwarmStatements =
 	@:NamespaceDeclare |
@@ -23,9 +23,16 @@ BlockStatementNode =
 	@:StringNode
 	;
 
+
 TypeNode = id:IdentifierNode;
 
 ExpressionNode = StringNode;
+
+
+ValueNode =
+	@:NumberNode |
+	@:StringNode
+	;
 
 
 KeyValueNode = key:KeyNode ':' value:ValueNode;
