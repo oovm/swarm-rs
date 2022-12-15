@@ -13,7 +13,7 @@ use headers::UserAgent;
 use tower_http::trace::{DefaultMakeSpan, TraceLayer};
 
 pub struct DroneWorker {
-    socket: SocketAddr,
+    pub socket: SocketAddr,
     websocket: Option<String>,
     restful: Option<String>,
     graphql: Option<String>,
@@ -31,6 +31,10 @@ impl Default for DroneWorker {
 }
 
 impl DroneWorker {
+    pub fn with_socket(mut self, socket: SocketAddr) -> Self {
+        self.socket = socket;
+        self
+    }
     pub fn with_port(mut self, port: u16) -> Self {
         self.socket.set_port(port);
         self
