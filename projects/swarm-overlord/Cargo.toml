@@ -17,7 +17,7 @@ find-target = "0.1.0"
 
 [dependencies.diagnostic-quick]
 version = "0.3.4"
-features = ["ssh2"]
+features = ["ssh2", "url", "mime"]
 
 [dev-dependencies]
 tokio = { version = "1.23.0", features = ["full"] }

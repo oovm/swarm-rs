@@ -10,7 +10,12 @@ use axum::{
     Router, Server,
 };
 use headers::UserAgent;
+// use tokio_cron_scheduler::JobScheduler;
 use tower_http::trace::{DefaultMakeSpan, TraceLayer};
+
+use self::web_socket::ws_handler;
+
+mod web_socket;
 
 pub struct DroneWorker {
     pub socket: SocketAddr,
@@ -63,8 +68,14 @@ impl DroneWorker {
 
 impl DroneWorker {
     pub async fn serve(self) -> Result<(), hyper::Error> {
-        let app = self.make_router().into_make_service();
+        let router = self.make_router();
+        // let jobs = JobScheduler::new().await.unwrap();
+        let tracer = TraceLayer::new_for_http().make_span_with(DefaultMakeSpan::default().include_headers(true));
+
+        let app = router.layer(tracer).into_make_service();
+
         let server = Server::try_bind(&self.socket)?.serve(app);
+
         server.await
     }
     fn make_router(&self) -> Router {
@@ -72,32 +83,6 @@ impl DroneWorker {
         if let Some(path) = &self.websocket {
             out = out.route(path, get(ws_handler))
         }
-        let tracer = TraceLayer::new_for_http().make_span_with(DefaultMakeSpan::default().include_headers(true));
-        out.layer(tracer)
-    }
-}
-
-async fn ws_handler(ws: WebSocketUpgrade, user_agent: Option<TypedHeader<UserAgent>>) -> impl IntoResponse {
-    if let Some(TypedHeader(user_agent)) = user_agent {
-        tracing::info!("`{}` connected", user_agent.as_str());
-    }
-    ws.on_upgrade(handle_socket)
-}
-
-async fn handle_socket(mut socket: WebSocket) {
-    if let Some(msg) = socket.recv().await {
-        match msg {
-            Ok(msg) => {
-                tracing::error!("Client says: {:?}", msg);
-                if socket.send(Message::Text(format!("{:?}", msg))).await.is_err() {
-                    tracing::error!("client disconnected");
-                    return;
-                }
-            }
-            Err(e) => {
-                tracing::error!("client disconnected: {e}");
-                return;
-            }
-        }
+        out
     }
 }
